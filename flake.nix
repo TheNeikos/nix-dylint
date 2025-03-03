@@ -26,11 +26,15 @@
           ];
         };
 
+        rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustTarget;
+
         callPackage = pkgs.lib.callPackageWith (
           pkgs
           // {
             inherit
               inputs
+              craneLib
               ;
           }
         );
