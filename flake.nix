@@ -21,7 +21,16 @@
           overlays = [ inputs.rust-overlay.overlays.default ];
         };
 
-        lib = import ./lib { inherit inputs; };
+        callPackage = pkgs.lib.callPackageWith (
+          pkgs
+          // {
+            inherit
+              inputs
+              ;
+          }
+        );
+
+        lib = callPackage ./lib {};
       in
       {
         inherit lib;
