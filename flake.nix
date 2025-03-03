@@ -18,10 +18,7 @@
       let
         pkgs = import inputs.nixpkgs {
           inherit system;
-          overlays = let
-            selfOverlay = _: _: inputs.self.packages."${system}" or {};
-          in [
-            selfOverlay
+          overlays = [
             inputs.rust-overlay.overlays.default
           ];
         };
@@ -29,27 +26,18 @@
         rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
         craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustTarget;
 
-        callPackage = pkgs.lib.callPackageWith (
-          pkgs
-          // {
-            inherit
-              inputs
-              craneLib
-              ;
-          }
-        );
-
         lib = import ./lib {
           inherit
             inputs
-            callPackage
+            craneLib
+            pkgs
             ;
         };
       in
       {
-        inherit lib;
-
-        packages = lib.packages;
+        packages = lib // {
+          rust = rustTarget;
+        };
 
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [

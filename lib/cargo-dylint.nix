@@ -1,7 +1,9 @@
 {
   pkgs,
   craneLib,
-  ...
+
+  pkg-config,
+  openssl,
 }:
 
 let
@@ -14,15 +16,24 @@ let
     tag = "v${version}";
     sha256 = "sha256-Z8uuewp7Buoadayc0oTafmfvwNT36KukWKiHxL/mQfI=";
   };
+in
 
-  cargoArtifacts = craneLib.buildDepsOnly {
-    inherit pname version src;
-  };
-in craneLib.buildPackage {
+craneLib.buildPackage {
   inherit
-    cargoArtifacts
     pname
     version
     src
     ;
+
+  buildInputs = [
+    openssl
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
+  RUSTUP_TOOLCHAIN = "nightly-2025-02-28";
+
+  doCheck = false;
 }
