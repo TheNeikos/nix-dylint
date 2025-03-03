@@ -18,7 +18,12 @@
       let
         pkgs = import inputs.nixpkgs {
           inherit system;
-          overlays = [ inputs.rust-overlay.overlays.default ];
+          overlays = let
+            selfOverlay = _: _: inputs.self.packages."${system}" or {};
+          in [
+            selfOverlay
+            inputs.rust-overlay.overlays.default
+          ];
         };
 
         callPackage = pkgs.lib.callPackageWith (
