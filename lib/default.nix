@@ -4,5 +4,7 @@
 }:
 
 {
-  cargo-dylint = callPackage ./cargo-dylint {};
+  packages = {
+    cargo-dylint = callPackage ./cargo-dylint.nix {};
+  };
 }

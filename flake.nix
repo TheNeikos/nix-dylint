@@ -35,10 +35,17 @@
           }
         );
 
-        lib = callPackage ./lib {};
+        lib = import ./lib {
+          inherit
+            inputs
+            callPackage
+            ;
+        };
       in
       {
         inherit lib;
+
+        packages = lib.packages;
 
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [
