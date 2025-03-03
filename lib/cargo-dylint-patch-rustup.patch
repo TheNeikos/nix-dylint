@@ -1,0 +1,82 @@
+diff --git a/dylint/build.rs b/dylint/build.rs
+index f96b676f..297d2dcf 100644
+--- a/dylint/build.rs
++++ b/dylint/build.rs
+@@ -31,7 +31,7 @@ fn write_dylint_driver_manifest_dir() {
+     {
+         "None".to_owned()
+     } else {
+-        let path_buf = dylint_manifest_dir.join("../driver");
++        let path_buf = Path::new("@DRIVER_DIR@");
+ 
+         // smoelius: Ensure the path exists at build time.
+         assert!(path_buf.is_dir(), "{path_buf:?} is not a directory");
+diff --git a/internal/src/cargo.rs b/internal/src/cargo.rs
+index 8532d68c..4e7f715c 100644
+--- a/internal/src/cargo.rs
++++ b/internal/src/cargo.rs
+@@ -14,16 +14,7 @@ use std::{
+ pub use home::cargo_home;
+ 
+ static STABLE_CARGO: Lazy<PathBuf> = Lazy::new(|| {
+-    let mut command = Command::new("rustup");
+-    // smoelius: Rustup 1.27.1 doesn't properly handle the case where the toolchain is specified via
+-    // both the `RUSTUP_TOOLCHAIN` environment variable and the command line (e.g., `+stable`). This
+-    // bug is fixed in Rustup's `master` branch, though.
+-    command.env_remove("RUSTUP_TOOLCHAIN");
+-    command.args(["+stable", "which", "cargo"]);
+-    let output = command.logged_output(true).unwrap();
+-    assert!(output.status.success());
+-    let stdout = String::from_utf8(output.stdout).unwrap();
+-    PathBuf::from(stdout.trim_end())
++    PathBuf::from("@STABLE_CARGO@")
+ });
+ 
+ bitflags! {
+diff --git a/internal/src/rustup.rs b/internal/src/rustup.rs
+index fb72a3fa..9b320670 100644
+--- a/internal/src/rustup.rs
++++ b/internal/src/rustup.rs
+@@ -15,7 +15,7 @@ impl SanitizeEnvironment for Command {
+     fn sanitize_environment(&mut self) -> &mut Self {
+         self.env_remove(env::CARGO);
+         self.env_remove(env::RUSTC);
+-        self.env_remove(env::RUSTUP_TOOLCHAIN);
++        // self.env_remove(env::RUSTUP_TOOLCHAIN);
+         self
+     }
+ }
+@@ -23,31 +23,11 @@ impl SanitizeEnvironment for Command {
+ // smoelius: Consider carefully whether you need to call this function! In most cases, the toolchain
+ // you want is not the one returned by rustup.
+ pub fn active_toolchain(path: &Path) -> Result<String> {
+-    let output = Command::new("rustup")
+-        .sanitize_environment()
+-        .current_dir(path)
+-        .args(["show", "active-toolchain"])
+-        .logged_output(true)?;
+-    let stdout = std::str::from_utf8(&output.stdout)?;
+-    stdout
+-        .split_once(' ')
+-        .map(|(s, _)| s.to_owned())
+-        .ok_or_else(|| anyhow!("Could not determine active toolchain"))
++    Ok(String::from("@RUST_TOOLCHAIN@"))
+ }
+ 
+ pub fn toolchain_path(path: &Path) -> Result<PathBuf> {
+-    let output = Command::new("rustup")
+-        .sanitize_environment()
+-        .current_dir(path)
+-        .args(["which", "rustc"])
+-        .logged_output(true)?;
+-    let stdout = std::str::from_utf8(&output.stdout)?;
+-    let path = PathBuf::from(stdout);
+-    // smoelius: `path` should end with `/bin/rustc`.
+-    path.ancestors()
+-        .nth(2)
+-        .map(Into::into)
+-        .ok_or_else(|| anyhow!("Could not get ancestor"))
++    Ok(PathBuf::from("@RUST_TOOLCHAIN_PATH@"))
+ }
+ 
+ pub fn is_rustc<T: AsRef<OsStr> + ?Sized>(arg: &T) -> bool {

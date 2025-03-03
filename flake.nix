@@ -23,7 +23,16 @@
           ];
         };
 
-        rustTarget = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+        rustTarget = pkgs.rust-bin.nightly."2025-02-20".default.override {
+          extensions = [
+            "rust-src"
+            "rust-std"
+            "cargo"
+            "rustc"
+            "rustc-dev"
+            "llvm-tools"
+          ];
+        };
         craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustTarget;
 
         lib = import ./lib {
@@ -38,11 +47,17 @@
         packages = lib // {
           inherit craneLib;
           rust = rustTarget;
+          drivers = pkgs.runCommandLocal "dylint-drivers" {} ''
+            mkdir -p $out/nightly-nix
+            ln -s ${lib.cargo-dylint-driver}/bin/dylint_driver-nix $out/nightly-nix/dylint-driver
+          '';
         };
 
         devShells.default = pkgs.mkShell {
+          RUSTUP_TOOLCHAIN = "nightly-nix";
           nativeBuildInputs = [
-            pkgs.rust-bin.nightly.latest.default
+            rustTarget
+            lib.cargo-dylint
           ];
         };
       }

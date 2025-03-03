@@ -4,6 +4,8 @@
 
   pkg-config,
   openssl,
+
+  cargo-dylint-driver,
 }:
 
 let
@@ -16,24 +18,44 @@ let
     tag = "v${version}";
     sha256 = "sha256-Z8uuewp7Buoadayc0oTafmfvwNT36KukWKiHxL/mQfI=";
   };
+
+  commonArgs = {
+    inherit pname version src;
+
+    buildInputs = [
+      openssl
+    ];
+
+    nativeBuildInputs = [
+      pkg-config
+    ];
+
+    RUSTUP_TOOLCHAIN = "nightly-nix";
+
+    doCheck = false;
+  };
+  cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 in
 
-craneLib.buildPackage {
-  inherit
-    pname
-    version
-    src
-    ;
+craneLib.buildPackage (
+  commonArgs
+  // {
+    inherit cargoArtifacts;
 
-  buildInputs = [
-    openssl
-  ];
+    patches = [ ./cargo-dylint-patch-rustup.patch ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
+    postPatch = ''
+      substituteInPlace dylint/build.rs \
+        --replace-fail @DRIVER_DIR@ ${src}/driver
 
-  RUSTUP_TOOLCHAIN = craneLib.rustc.version;
+      substituteInPlace internal/src/cargo.rs \
+        --replace-fail @STABLE_CARGO@ ${craneLib.cargo}/bin/cargo
 
-  doCheck = false;
-}
+      substituteInPlace internal/src/rustup.rs \
+        --replace-fail @RUST_TOOLCHAIN@ "nightly-nix" \
+        --replace-fail @RUST_TOOLCHAIN_PATH@ ${craneLib.rustc}
+    '';
+
+    doNotRemoveReferencesToRustToolchain = true;
+  }
+)
