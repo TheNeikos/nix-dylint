@@ -13,7 +13,7 @@ let
 
     strictDeps = true;
 
-    RUSTUP_TOOLCHAIN = "nightly-nix";
+    RUSTUP_TOOLCHAIN = "nightly-2025-01-09";
   };
 in
 

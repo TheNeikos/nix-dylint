@@ -30,7 +30,7 @@ let
       pkg-config
     ];
 
-    RUSTUP_TOOLCHAIN = "nightly-nix";
+    RUSTUP_TOOLCHAIN = "nightly-2025-01-09";
 
     doCheck = false;
   };
@@ -52,7 +52,7 @@ craneLib.buildPackage (
         --replace-fail @STABLE_CARGO@ ${craneLib.cargo}/bin/cargo
 
       substituteInPlace internal/src/rustup.rs \
-        --replace-fail @RUST_TOOLCHAIN@ "nightly-nix" \
+        --replace-fail @RUST_TOOLCHAIN@ $RUSTUP_TOOLCHAIN \
         --replace-fail @RUST_TOOLCHAIN_PATH@ ${craneLib.rustc}
     '';
 

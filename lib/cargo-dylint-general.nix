@@ -39,9 +39,15 @@ let
 
     preBuild = ''
       cd examples/general
+      mkdir -p .cargo
     '';
 
-    RUSTUP_TOOLCHAIN = "nightly-nix";
+
+    CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER = "dylint-link";
+
+    cargoExtraArgs = "-p crate_wide_allow";
+
+    RUSTUP_TOOLCHAIN = "nightly-2025-01-09";
   };
 in
 
