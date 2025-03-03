@@ -36,6 +36,7 @@
       in
       {
         packages = lib // {
+          inherit craneLib;
           rust = rustTarget;
         };
 

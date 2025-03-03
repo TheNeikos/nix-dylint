@@ -33,7 +33,7 @@ craneLib.buildPackage {
     pkg-config
   ];
 
-  RUSTUP_TOOLCHAIN = "nightly-2025-02-28";
+  RUSTUP_TOOLCHAIN = craneLib.rustc.version;
 
   doCheck = false;
 }
