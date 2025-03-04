@@ -13,8 +13,8 @@ let
   driver_names = lib.groupBy (v: v.toolchain) lints;
   driverMap = builtins.mapAttrs (
     name: _:
-    mkCargoDylintDriver "nightly-${name}" (
-      pkgs.rust-bin.nightly."${name}".default.override {
+    mkCargoDylintDriver "${name}" (
+      pkgs.rust-bin.nightly."${lib.removePrefix "nightly-" name}".default.override {
         extensions = [
           "rustc-dev"
         ];
@@ -25,8 +25,8 @@ let
     mkdir -p $out
 
     ${lib.strings.concatMapAttrsStringSep "\n" (name: driver: ''
-      mkdir -p $out/nightly-${name}
-      ln -s ${driver}/bin/dylint_driver-nix $out/nightly-${name}/dylint-driver
+      mkdir -p $out/${name}
+      ln -s ${driver}/bin/dylint_driver-nix $out/${name}/dylint-driver
     '') driverMap}
   '';
 in
