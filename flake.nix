@@ -37,24 +37,25 @@
             pkgs
             ;
         };
-        drivers = pkgs.runCommandLocal "dylint-drivers" { } ''
-          mkdir -p $out/nightly-2025-01-09
-          ln -s ${lib.cargo-dylint-driver}/bin/dylint_driver-nix $out/nightly-2025-01-09/dylint-driver
-        '';
+
+        lints = [
+          {
+            toolchain = "2025-01-09";
+            package = lib.cargo-dylint-general;
+          }
+        ];
+        dylint = lib.mkDylint { inherit lints; };
       in
       {
         packages = lib // {
-          inherit craneLib drivers;
+          inherit craneLib;
           rust = rustTarget;
         };
 
         devShells.default = pkgs.mkShell {
-          RUSTUP_TOOLCHAIN = "nightly-2025-01-09";
-          DYLINT_LIBRARY_PATH = "${lib.cargo-dylint-general}/lib/";
-          DYLINT_DRIVER_PATH = drivers;
           nativeBuildInputs = [
             rustTarget
-            lib.cargo-dylint
+            dylint
           ];
         };
       }

@@ -4,8 +4,6 @@
 
   pkg-config,
   openssl,
-
-  cargo-dylint-driver,
 }:
 
 let

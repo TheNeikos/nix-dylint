@@ -9,8 +9,11 @@ let
   callPackage = pkgs.lib.callPackageWith (pkgs // packages // { inherit inputs craneLib; });
   packages = {
     cargo-dylint = callPackage ./cargo-dylint.nix { };
-    cargo-dylint-driver = callPackage ./cargo-dylint-driver.nix { };
     cargo-dylint-general = callPackage ./cargo-dylint-general.nix { };
+
+    mkCargoDylintDriver = callPackage ./mk-cargo-dylint-driver.nix { };
+    mkLint = callPackage ./mk-lint.nix { };
+    mkDylint = callPackage ./mk-dylint.nix { };
   };
 
 in
