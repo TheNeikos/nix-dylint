@@ -13,13 +13,17 @@ let
   driver_names = lib.groupBy (v: v.toolchain) lints;
   driverMap = builtins.mapAttrs (
     name: _:
-    mkCargoDylintDriver "${name}" (
-      pkgs.rust-bin.nightly."${lib.removePrefix "nightly-" name}".default.override {
-        extensions = [
-          "rustc-dev"
-        ];
-      }
-    )
+    lib.throwIf ((builtins.match "^[[:digit:]].*$" name) != null)
+      "Rust toolchains generally do not start with numbers. Make sure you include the channel, as in `nightly-YYYY-MM-DD`. Given '${name}'"
+      mkCargoDylintDriver
+      "${name}"
+      (
+        pkgs.rust-bin.nightly."${lib.removePrefix "nightly-" name}".default.override {
+          extensions = [
+            "rustc-dev"
+          ];
+        }
+      )
   ) driver_names;
   drivers = pkgs.runCommandLocal "dylint-drivers" { } ''
     mkdir -p $out
@@ -37,6 +41,8 @@ pkgs.runCommandLocal "cargo-dylint-wrapped"
   }
   ''
     makeWrapper ${cargo-dylint}/bin/cargo-dylint $out/bin/cargo-dylint \
-      --set-default DYLINT_LIBRARY_PATH "${lib.strings.makeLibraryPath (builtins.map (v: v.package) lints)}" \
+      --set-default DYLINT_LIBRARY_PATH "${
+        lib.strings.makeLibraryPath (builtins.map (v: v.package) lints)
+      }" \
       --set DYLINT_DRIVER_PATH ${drivers};
   ''

@@ -32,7 +32,7 @@
 
         lints = [
           {
-            toolchain = "2025-01-09";
+            toolchain = "nightly-2025-01-09";
             package = dylintLib.cargo-dylint-general;
           }
         ];
