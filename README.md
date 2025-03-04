@@ -25,6 +25,7 @@ Using `nix-dylint` requires the following:
 
 - A `nixpkgs` instance with the `rust-overlay` applied from
   [`oxalica/rust-overlay`](https://github.com/oxalica/rust-overlay/tree/master).
+- `crane` from [`ipetkov/crane`](https://github.com/ipetkov/crane)
 - A list of lints and their nightly toolchains, formatted as e.g.
   `nightly-{date}`
 
