@@ -20,6 +20,10 @@ let
     sha256 = "sha256-Z8uuewp7Buoadayc0oTafmfvwNT36KukWKiHxL/mQfI=";
   };
 
+  crane = craneLib.overrideToolchain (
+    pkgs.rust-bin.nightly."2025-01-09".default.override { extensions = [ "rustc-dev" ]; }
+  );
+
   commonArgs = {
     inherit pname version;
 
@@ -35,23 +39,20 @@ let
       cargo-dylint
     ];
 
-    cargoVendorDir = craneLib.vendorCargoDeps { cargoLock = ./cargo-dylint-general-Cargo.lock; };
+    cargoVendorDir = crane.vendorCargoDeps { cargoLock = ./cargo-dylint-general-Cargo.lock; };
 
     preBuild = ''
       cd examples/general
       mkdir -p .cargo
     '';
 
-
-    CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER = "dylint-link";
-
-    cargoExtraArgs = "-p crate_wide_allow";
+    cargoExtraArgs = "-p general";
 
     RUSTUP_TOOLCHAIN = "nightly-2025-01-09";
   };
 in
 
-craneLib.buildPackage (
+crane.buildPackage (
   commonArgs
   // {
     cargoArtifacts = null;
@@ -59,7 +60,7 @@ craneLib.buildPackage (
     doCheck = false;
 
     postFixup = ''
-      ${util-linux}/bin/rename .so @$RUSTUP_TOOLCHAIN.so $out/lib/*.so
+      mv $out/lib/libgeneral{.so,@$RUSTUP_TOOLCHAIN.so}
     '';
 
     doNotRemoveReferencesToRustToolchain = true;

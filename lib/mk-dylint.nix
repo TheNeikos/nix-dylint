@@ -21,12 +21,14 @@ let
       }
     )
   ) driver_names;
-  drivers = pkgs.runCommandLocal "dylint-drivers" { } (
-    lib.strings.concatMapAttrsStringSep "\n" (name: driver: ''
+  drivers = pkgs.runCommandLocal "dylint-drivers" { } ''
+    mkdir -p $out
+
+    ${lib.strings.concatMapAttrsStringSep "\n" (name: driver: ''
       mkdir -p $out/nightly-${name}
       ln -s ${driver}/bin/dylint_driver-nix $out/nightly-${name}/dylint-driver
-    '') driverMap
-  );
+    '') driverMap}
+  '';
 in
 pkgs.runCommandLocal "cargo-dylint-wrapped"
   {
@@ -35,6 +37,6 @@ pkgs.runCommandLocal "cargo-dylint-wrapped"
   }
   ''
     makeWrapper ${cargo-dylint}/bin/cargo-dylint $out/bin/cargo-dylint \
-      --set DYLINT_LIBRARY_PATH ${lib.strings.makeLibraryPath (builtins.map (v: v.package) lints)} \
+      --set-default DYLINT_LIBRARY_PATH "${lib.strings.makeLibraryPath (builtins.map (v: v.package) lints)}" \
       --set DYLINT_DRIVER_PATH ${drivers};
   ''

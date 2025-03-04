@@ -23,11 +23,7 @@
           ];
         };
 
-        rustTarget = pkgs.rust-bin.nightly."2025-01-09".default.override {
-          extensions = [
-            "rustc-dev"
-          ];
-        };
+        rustTarget = pkgs.rust-bin.stable.latest.default.override { };
         craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustTarget;
 
         lib = import ./lib {
