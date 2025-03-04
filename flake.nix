@@ -24,29 +24,22 @@
         };
 
         rustTarget = pkgs.rust-bin.stable.latest.default.override { };
-        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustTarget;
 
-        lib = import ./lib {
-          inherit
-            inputs
-            craneLib
-            pkgs
-            ;
+        dylintLib = import ./mk-lib.nix {
+          inherit pkgs;
+          inherit (inputs) crane;
         };
 
         lints = [
           {
             toolchain = "2025-01-09";
-            package = lib.cargo-dylint-general;
+            package = dylintLib.cargo-dylint-general;
           }
         ];
-        dylint = lib.mkDylint { inherit lints; };
+        dylint = dylintLib.mkDylint { inherit lints; };
       in
       {
-        packages = lib // {
-          inherit craneLib;
-          rust = rustTarget;
-        };
+        mkLib = import ./mk-lib.nix;
 
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [

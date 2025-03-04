@@ -1,12 +1,11 @@
 {
   pkgs,
-  inputs,
   craneLib,
   ...
 }:
 
 let
-  callPackage = pkgs.lib.callPackageWith (pkgs // packages // { inherit inputs craneLib; });
+  callPackage = pkgs.lib.callPackageWith (pkgs // packages // { inherit craneLib; });
   packages = {
     cargo-dylint = callPackage ./cargo-dylint.nix { };
     cargo-dylint-general = callPackage ./cargo-dylint-general.nix { };
