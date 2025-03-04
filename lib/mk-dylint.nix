@@ -1,5 +1,6 @@
 {
   pkgs,
+  craneLib,
 
   cargo-dylint,
 
@@ -47,7 +48,7 @@ let
       ''
     ) driverMap}
       *)
-        exec cargo "$@"
+        exec ${craneLib.cargo}/bin/cargo "$@"
       ;;
     esac
   '';
