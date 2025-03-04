@@ -49,6 +49,18 @@ let
       ;;
     esac
   '';
+  rustc-wrapper = pkgs.writeShellScriptBin "rustc" ''
+    case "$RUSTUP_TOOLCHAIN" in
+    ${lib.strings.concatMapAttrsStringSep "\n" (name: _: ''
+      ${name})
+        exec ${toolchains.${name}}/bin/rustc "$@"
+      ;;
+    '') driverMap}
+      *)
+        exec ${craneLib.rustc}/bin/rustc "$@"
+      ;;
+    esac
+  '';
 in
 pkgs.runCommandLocal "cargo-dylint-wrapped"
   {
@@ -66,7 +78,12 @@ pkgs.runCommandLocal "cargo-dylint-wrapped"
         lib.strings.makeLibraryPath (builtins.map (v: v.package) lints)
       }" \
       --set DYLINT_DRIVER_PATH ${drivers} \
-      --prefix PATH : ${lib.makeBinPath [ cargo-wrapper ]}
+      --prefix PATH : ${
+        lib.makeBinPath [
+          cargo-wrapper
+          rustc-wrapper
+        ]
+      }
 
     ln -s ${cargo-dylint}/bin/dylint-link $out/bin/dylint-link
   ''
