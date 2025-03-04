@@ -3,6 +3,12 @@
 This repository contains a nix library that allows easy access to the
 [dylint](https://github.com/trailofbits/dylint) project in a reproducible way.
 
+**Current State**
+
+⚠️⚠️⚠️
+This repo is still evolving, and as such might break your evaluation on update.
+Input to the design and structure are welcome!
+⚠️⚠️⚠️
 
 ## How to use
 
