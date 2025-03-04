@@ -12,12 +12,22 @@
 let
   inherit (pkgs) lib;
   driver_names = lib.groupBy (v: v.toolchain) lints;
+  toolchains = builtins.mapAttrs (
+    name: _:
+
+    (pkgs.rust-bin.fromRustupToolchainFile (pkgs.writeText "${name}-toolchain.toml" name)).override {
+      extensions = [
+        "rustc-dev"
+      ];
+    }
+  ) driver_names;
   driverMap = builtins.mapAttrs (
     name: _:
     lib.throwIf ((builtins.match "^[[:digit:]].*$" name) != null)
       "Rust toolchains generally do not start with numbers. Make sure you include the channel, as in `nightly-YYYY-MM-DD`. Given '${name}'"
       mkCargoDylintDriver
       "${name}"
+      toolchains.${name}
   ) driver_names;
   drivers = pkgs.runCommandLocal "dylint-drivers" { } ''
     mkdir -p $out
@@ -29,24 +39,11 @@ let
   '';
   cargo-wrapper = pkgs.writeShellScriptBin "cargo" ''
     case "$RUSTUP_TOOLCHAIN" in
-    ${lib.strings.concatMapAttrsStringSep "\n" (
-      name: driver:
-      let
-        toolchain =
-          (pkgs.rust-bin.fromRustupToolchainFile (pkgs.writeText "${name}-toolchain.toml" name)).override
-            {
-              extensions = [
-                "rustc-dev"
-              ];
-            };
-
-      in
-      ''
-        ${name})
-          exec ${toolchain}/bin/cargo "$@"
-        ;;
-      ''
-    ) driverMap}
+    ${lib.strings.concatMapAttrsStringSep "\n" (name: _: ''
+      ${name})
+        exec ${toolchains.${name}}/bin/cargo "$@"
+      ;;
+    '') driverMap}
       *)
         exec ${craneLib.cargo}/bin/cargo "$@"
       ;;

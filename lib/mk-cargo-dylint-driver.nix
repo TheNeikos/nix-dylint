@@ -3,21 +3,12 @@
   craneLib,
 }:
 
-toolchainName:
+toolchainName: toolchain:
 
 let
   pname = "cargo-dylint-driver-${toolchainName}";
   version = "4.0.0";
   src = ../dylint_driver;
-  toolchain =
-    (pkgs.rust-bin.fromRustupToolchainFile (
-      pkgs.writeText "${toolchainName}-toolchain.toml" toolchainName
-    )).override
-      {
-        extensions = [
-          "rustc-dev"
-        ];
-      };
 
 in
 

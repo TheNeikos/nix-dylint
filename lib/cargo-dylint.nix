@@ -40,20 +40,6 @@ craneLib.buildPackage (
   // {
     inherit cargoArtifacts;
 
-    patches = [ ./cargo-dylint-patch-rustup.patch ];
-
-    postPatch = ''
-      substituteInPlace dylint/build.rs \
-        --replace-fail @DRIVER_DIR@ ${src}/driver
-
-      substituteInPlace internal/src/cargo.rs \
-        --replace-fail @STABLE_CARGO@ ${craneLib.cargo}/bin/cargo
-
-      substituteInPlace internal/src/rustup.rs \
-        --replace-fail @RUST_TOOLCHAIN@ $RUSTUP_TOOLCHAIN \
-        --replace-fail @RUST_TOOLCHAIN_PATH@ ${craneLib.rustc}
-    '';
-
     doNotRemoveReferencesToRustToolchain = true;
   }
 )
