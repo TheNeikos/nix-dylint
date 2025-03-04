@@ -26,6 +26,31 @@ let
       ln -s ${driver}/bin/dylint_driver-nix $out/${name}/dylint-driver
     '') driverMap}
   '';
+  cargo-wrapper = pkgs.writeShellScriptBin "cargo" ''
+    case "$RUSTUP_TOOLCHAIN" in
+    ${lib.strings.concatMapAttrsStringSep "\n" (
+      name: driver:
+      let
+        toolchain =
+          (pkgs.rust-bin.fromRustupToolchainFile (pkgs.writeText "${name}-toolchain.toml" name)).override
+            {
+              extensions = [
+                "rustc-dev"
+              ];
+            };
+
+      in
+      ''
+        ${name})
+          exec ${toolchain}/bin/cargo "$@"
+        ;;
+      ''
+    ) driverMap}
+      *)
+        exec cargo "$@"
+      ;;
+    esac
+  '';
 in
 pkgs.runCommandLocal "cargo-dylint-wrapped"
   {
@@ -42,7 +67,8 @@ pkgs.runCommandLocal "cargo-dylint-wrapped"
       --set-default DYLINT_LIBRARY_PATH "${
         lib.strings.makeLibraryPath (builtins.map (v: v.package) lints)
       }" \
-      --set DYLINT_DRIVER_PATH ${drivers};
+      --set DYLINT_DRIVER_PATH ${drivers} \
+      --prefix PATH : ${lib.makeBinPath [ cargo-wrapper ]}
 
     ln -s ${cargo-dylint}/bin/dylint-link $out/bin/dylint-link
   ''
