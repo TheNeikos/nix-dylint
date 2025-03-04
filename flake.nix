@@ -13,40 +13,45 @@
 
   outputs =
     inputs:
-    inputs.flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = import inputs.nixpkgs {
-          inherit system;
-          overlays = [
-            inputs.rust-overlay.overlays.default
+    (
+      inputs.flake-utils.lib.eachDefaultSystem (
+        system:
+        let
+          pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [
+              inputs.rust-overlay.overlays.default
+            ];
+          };
+
+          rustTarget = pkgs.rust-bin.stable.latest.default.override { };
+
+          dylintLib = import ./mk-lib.nix {
+            inherit pkgs;
+            inherit (inputs) crane;
+          };
+
+          lints = [
+            {
+              toolchain = "nightly-2025-01-09";
+              package = dylintLib.cargo-dylint-general;
+            }
           ];
-        };
+          dylint = dylintLib.mkDylint { inherit lints; };
+        in
+        {
 
-        rustTarget = pkgs.rust-bin.stable.latest.default.override { };
+          devShells.default = pkgs.mkShell {
+            nativeBuildInputs = [
+              rustTarget
+              dylint
+            ];
+          };
+        }
+      )
+      // {
 
-        dylintLib = import ./mk-lib.nix {
-          inherit pkgs;
-          inherit (inputs) crane;
-        };
-
-        lints = [
-          {
-            toolchain = "nightly-2025-01-09";
-            package = dylintLib.cargo-dylint-general;
-          }
-        ];
-        dylint = dylintLib.mkDylint { inherit lints; };
-      in
-      {
         mkLib = import ./mk-lib.nix;
-
-        devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [
-            rustTarget
-            dylint
-          ];
-        };
       }
     );
 }
