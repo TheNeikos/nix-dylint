@@ -17,13 +17,6 @@ let
       "Rust toolchains generally do not start with numbers. Make sure you include the channel, as in `nightly-YYYY-MM-DD`. Given '${name}'"
       mkCargoDylintDriver
       "${name}"
-      (
-        pkgs.rust-bin.nightly."${lib.removePrefix "nightly-" name}".default.override {
-          extensions = [
-            "rustc-dev"
-          ];
-        }
-      )
   ) driver_names;
   drivers = pkgs.runCommandLocal "dylint-drivers" { } ''
     mkdir -p $out
