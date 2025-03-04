@@ -38,4 +38,6 @@ pkgs.runCommandLocal "cargo-dylint-wrapped"
         lib.strings.makeLibraryPath (builtins.map (v: v.package) lints)
       }" \
       --set DYLINT_DRIVER_PATH ${drivers};
+
+    ln -s ${cargo-dylint}/bin/dylint-link $out/bin/dylint-link
   ''
