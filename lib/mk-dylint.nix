@@ -32,6 +32,7 @@ pkgs.runCommandLocal "cargo-dylint-wrapped"
     nativeBuildInputs = [ pkgs.makeWrapper ];
     meta.mainProgram = "cargo-dylint";
     passthru = {
+      inherit lints;
       DYLINT_LIBRARY_PATH = lib.strings.makeLibraryPath (builtins.map (v: v.package) lints);
       DYLINT_DRIVER_PATH = drivers;
     };
